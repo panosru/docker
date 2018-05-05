@@ -133,9 +133,6 @@ RUN useradd -u "$APPLICATION_UID" --home "/home/application" --create-home --she
 # Assign user to group
 RUN usermod -g "$APPLICATION_GROUP" "$APPLICATION_USER"
 
-
-# Copy files to proper locations
-
 # Set Volumes
 VOLUME ["/var/www", "/usr/local/etc", "/tmp/debug"]
 
