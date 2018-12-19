@@ -17,6 +17,7 @@ RUN apt-get update && apt-get upgrade -y \
     libkrb5-dev \
     libpq-dev \
     libmagickwand-dev \
+    libldap2-dev \
     libyaml-dev \
     libmcrypt-dev \
     libpng-dev \
@@ -49,6 +50,7 @@ RUN apt-get update && apt-get upgrade -y \
     --with-jpeg-dir=/usr/include/ \
     --with-png-dir=/usr/include/ \
     && docker-php-ext-install gd \
+    && docker-php-ext-install ldap \
     && docker-php-ext-configure intl \
     && docker-php-ext-install intl \
     && yes '' | pecl install imagick && docker-php-ext-enable imagick \
