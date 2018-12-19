@@ -17,7 +17,6 @@ RUN apt-get update && apt-get upgrade -y \
     libkrb5-dev \
     libpq-dev \
     libmagickwand-dev \
-    libldap2-dev \
     libyaml-dev \
     libmcrypt-dev \
     libpng-dev \
@@ -50,7 +49,6 @@ RUN apt-get update && apt-get upgrade -y \
     --with-jpeg-dir=/usr/include/ \
     --with-png-dir=/usr/include/ \
     && docker-php-ext-install gd \
-    && docker-php-ext-install ldap \
     && docker-php-ext-configure intl \
     && docker-php-ext-install intl \
     && yes '' | pecl install imagick && docker-php-ext-enable imagick \
@@ -82,6 +80,16 @@ RUN curl -sSL "https://codeload.github.com/phalcon/cphalcon/tar.gz/v${PHALCON_VE
     && cd ../../ \
     && rm -r cphalcon-${PHALCON_VERSION} \
     && docker-php-ext-enable phalcon
+
+# Install Swoole
+RUN git clone https://github.com/swoole/swoole-src.git && \
+    cd swoole-src && \
+    phpize && \
+    ./configure && \
+    make && make install && \
+    cd ../ && \
+    rm -r swoole-src && \
+    docker-php-ext-enable swoole
 
 
 # Install Blackfire
