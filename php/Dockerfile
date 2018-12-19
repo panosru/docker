@@ -2,7 +2,7 @@
 # PHP application Docker container
 #++++++++++++++++++++++++++++++++++++++
 
-FROM php:7.2.5-fpm
+FROM php:7.2.13-fpm
 
 
 RUN apt-get update && apt-get upgrade -y \
@@ -71,7 +71,7 @@ RUN pecl install apcu \
     && docker-php-ext-enable apc --ini-name 20-docker-php-ext-apc.ini
 
 # Install Phalcon
-ENV PHALCON_VERSION=3.3.1
+ENV PHALCON_VERSION=3.4.2
 
 RUN curl -sSL "https://codeload.github.com/phalcon/cphalcon/tar.gz/v${PHALCON_VERSION}" | tar -xz \
     && cd cphalcon-${PHALCON_VERSION}/build \
