@@ -56,6 +56,7 @@ RUN apt-get update && apt-get upgrade -y \
     && docker-php-ext-configure imap --with-kerberos --with-imap-ssl \
     && docker-php-ext-install imap \
     && pecl install memcached && docker-php-ext-enable memcached \
+    && pecl install ssh2 && docker-php-ext-enable ssh2 \
     && pecl install mongodb && docker-php-ext-enable mongodb \
     && pecl install redis && docker-php-ext-enable redis \
     && pecl install xdebug-2.7.0beta1 && docker-php-ext-enable xdebug \
