@@ -9,6 +9,7 @@ RUN apt-get update && apt-get upgrade -y \
     wget \
     git \
     unzip \
+    curl \
     g++ \
     librabbitmq-dev \
     libc-client-dev \
@@ -22,6 +23,7 @@ RUN apt-get update && apt-get upgrade -y \
     libmcrypt-dev \
     libpng-dev \
     libmemcached-dev \
+    libz-dev \
     libssl-dev \
     libssl-doc \
     libsasl2-dev \
@@ -45,17 +47,28 @@ RUN apt-get update && apt-get upgrade -y \
     pdo_pgsql \
     soap \
     zip \
+    && docker-php-ext-configure memcached \
+        --with-php-config=/usr/local/bin/php-config \
+        --with-libmemcached-dir=no \
+        --with-zlib-dir=no \
+        --with-system-fastlz=no \
+        --enable-memcached-igbinary=no \
+        --enable-memcached-msgpack=no \
+        --enable-memcached-json=yes \
+        --enable-memcached-protocol=yes \
+        --enable-memcached-sasl=yes \
+        --enable-memcached-session=yes \
+    && docker-php-ext-install memcached
     && docker-php-ext-configure gd \
-    --with-freetype-dir=/usr/include/ \
-    --with-jpeg-dir=/usr/include/ \
-    --with-png-dir=/usr/include/ \
+        --with-freetype-dir=/usr/include/ \
+        --with-jpeg-dir=/usr/include/ \
+        --with-png-dir=/usr/include/ \
     && docker-php-ext-install gd \
     && docker-php-ext-configure intl \
     && docker-php-ext-install intl \
     && yes '' | pecl install imagick && docker-php-ext-enable imagick \
     && docker-php-ext-configure imap --with-kerberos --with-imap-ssl \
     && docker-php-ext-install imap \
-    && pecl install memcached && docker-php-ext-enable memcached \
     && pecl install ssh2 && docker-php-ext-enable ssh2 \
     && pecl install mongodb && docker-php-ext-enable mongodb \
     && pecl install redis && docker-php-ext-enable redis \
