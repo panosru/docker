@@ -58,7 +58,7 @@ RUN apt-get update && apt-get upgrade -y \
         --enable-memcached-protocol=yes \
         --enable-memcached-sasl=yes \
         --enable-memcached-session=yes \
-    && docker-php-ext-install memcached
+    && docker-php-ext-install memcached \
     && docker-php-ext-configure gd \
         --with-freetype-dir=/usr/include/ \
         --with-jpeg-dir=/usr/include/ \
