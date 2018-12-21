@@ -4,13 +4,11 @@
 
 FROM php:7.2.13-fpm
 
+ARG DEBIAN_FRONTEND=noninteractive
 
-RUN apt-get update && apt-get upgrade -y \
-    wget \
-    git \
-    unzip \
-    curl \
-    g++ \
+RUN apt-get update && apt-get upgrade -y --no-install-recommends apt-utils \
+    supervisor \
+    logrotate \
     librabbitmq-dev \
     libc-client-dev \
     libfreetype6-dev \
@@ -24,19 +22,21 @@ RUN apt-get update && apt-get upgrade -y \
     libpng-dev \
     libmemcached-dev \
     libz-dev \
-    libssl-dev \
-    libssl-doc \
     libsasl2-dev \
-    zlib1g-dev \
-    && docker-php-ext-install \
+    libldap2-dev \
+    libzip-dev \
+    wget \
+    git \
+    unzip \
+    zip \
+    && docker-php-ext-install -j$(nproc) \
     bz2 \
     bcmath \
     calendar \
     exif \
     gettext \
-    iconv \
-    mbstring \
     pcntl \
+    soap \
     shmop \
     mysqli \
     sockets \
@@ -45,31 +45,28 @@ RUN apt-get update && apt-get upgrade -y \
     pgsql \
     pdo_mysql \
     pdo_pgsql \
-    soap \
     zip \
-    && docker-php-ext-configure memcached \
-        --with-php-config=/usr/local/bin/php-config \
-        --with-libmemcached-dir=no \
-        --with-zlib-dir=no \
-        --with-system-fastlz=no \
-        --enable-memcached-igbinary=no \
-        --enable-memcached-msgpack=no \
-        --enable-memcached-json=yes \
-        --enable-memcached-protocol=yes \
-        --enable-memcached-sasl=yes \
-        --enable-memcached-session=yes \
-    && docker-php-ext-install memcached \
+    # configure: WARNING: Libzip >= 1.2.0 needed for encryption support
+    # https://github.com/docker-library/php/issues/766
+#    && docker-php-ext-configure zip \
+#        --with-libzip \
+#    && docker-php-ext-install zip \
+    && docker-php-ext-configure ldap \
+        --with-libdir=lib/x86_64-linux-gnu/ \
+    && docker-php-ext-install ldap \
     && docker-php-ext-configure gd \
         --with-freetype-dir=/usr/include/ \
         --with-jpeg-dir=/usr/include/ \
         --with-png-dir=/usr/include/ \
-    && docker-php-ext-install gd \
+    && docker-php-ext-install -j$(nproc) gd \
     && docker-php-ext-configure intl \
-    && docker-php-ext-install intl \
-    && yes '' | pecl install imagick && docker-php-ext-enable imagick \
-    && docker-php-ext-configure imap --with-kerberos --with-imap-ssl \
+    && docker-php-ext-install -j$(nproc) intl \
+    && docker-php-ext-configure imap \
+        --with-kerberos \
+        --with-imap-ssl \
     && docker-php-ext-install imap \
-    && pecl install ssh2 && docker-php-ext-enable ssh2 \
+    && yes '' | pecl install imagick && docker-php-ext-enable imagick \
+    && pecl install memcached-3.0.4 && docker-php-ext-enable memcached \
     && pecl install mongodb && docker-php-ext-enable mongodb \
     && pecl install redis && docker-php-ext-enable redis \
     && pecl install xdebug-2.7.0beta1 && docker-php-ext-enable xdebug \
@@ -93,8 +90,7 @@ RUN curl -sSL "https://codeload.github.com/phalcon/cphalcon/tar.gz/v${PHALCON_VE
     && ./install \
     && cp ../tests/_ci/phalcon.ini $(php-config --configure-options | grep -o "with-config-file-scan-dir=\([^ ]*\)" | awk -F'=' '{print $2}') \
     && cd ../../ \
-    && rm -r cphalcon-${PHALCON_VERSION} \
-    && docker-php-ext-enable phalcon
+    && rm -r cphalcon-${PHALCON_VERSION}
 
 # Install Swoole
 RUN git clone https://github.com/swoole/swoole-src.git && \
@@ -129,7 +125,9 @@ RUN pecl install trader && docker-php-ext-enable trader
 
 # Install Composer
 RUN curl --silent --show-error https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer \
-    && ln -s $(composer config --global home) /root/composer
+    && ln -s $(composer config --global home) /root/composer \
+    # parallel install plugin
+    && composer global require hirak/prestissimo
 
 ENV PATH $PATH:/root/composer/vendor/bin
 
@@ -138,28 +136,3 @@ RUN pecl clear-cache \
     && apt-get autoremove -y --purge \
     && apt-get clean \
     && rm -Rf /tmp/*
-
-
-#ENV PROVISION_CONTEXT "development"
-#
-## Add User
-#ENV APPLICATION_USER=application \
-#    APPLICATION_GROUP=application \
-#    APPLICATION_PATH=/app \
-#    APPLICATION_UID=1000 \
-#    APPLICATION_GID=1000
-#
-## Add group
-#RUN groupadd -g "$APPLICATION_GID" "$APPLICATION_GROUP"
-#
-## Add user
-#RUN useradd -u "$APPLICATION_UID" --home "/home/application" --create-home --shell /bin/bash --no-user-group "$APPLICATION_USER"
-#
-## Assign user to group
-#RUN usermod -g "$APPLICATION_GROUP" "$APPLICATION_USER"
-#
-## Set Volumes
-#VOLUME ["/var/www", "/usr/local/etc", "/tmp/debug"]
-#
-## Configure volume/workdir
-#WORKDIR /var/www/
