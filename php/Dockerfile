@@ -8,6 +8,7 @@ FROM php:7.2.13-fpm
 RUN apt-get update && apt-get upgrade -y \
     wget \
     git \
+    unzip \
     g++ \
     librabbitmq-dev \
     libc-client-dev \
@@ -57,7 +58,7 @@ RUN apt-get update && apt-get upgrade -y \
     && pecl install memcached && docker-php-ext-enable memcached \
     && pecl install mongodb && docker-php-ext-enable mongodb \
     && pecl install redis && docker-php-ext-enable redis \
-    && pecl install xdebug && docker-php-ext-enable xdebug \
+    && pecl install xdebug-2.7.0beta1 && docker-php-ext-enable xdebug \
     && pecl install igbinary && docker-php-ext-enable igbinary \
     && pecl install psr && docker-php-ext-enable psr \
     && pecl install mcrypt-1.0.1 && docker-php-ext-enable mcrypt \
@@ -125,26 +126,26 @@ RUN pecl clear-cache \
     && rm -Rf /tmp/*
 
 
-ENV PROVISION_CONTEXT "development"
-
-# Add User
-ENV APPLICATION_USER=application \
-    APPLICATION_GROUP=application \
-    APPLICATION_PATH=/app \
-    APPLICATION_UID=1000 \
-    APPLICATION_GID=1000
-
-# Add group
-RUN groupadd -g "$APPLICATION_GID" "$APPLICATION_GROUP"
-
-# Add user
-RUN useradd -u "$APPLICATION_UID" --home "/home/application" --create-home --shell /bin/bash --no-user-group "$APPLICATION_USER"
-
-# Assign user to group
-RUN usermod -g "$APPLICATION_GROUP" "$APPLICATION_USER"
-
-# Set Volumes
-VOLUME ["/var/www", "/usr/local/etc", "/tmp/debug"]
-
-# Configure volume/workdir
-WORKDIR /var/www/
+#ENV PROVISION_CONTEXT "development"
+#
+## Add User
+#ENV APPLICATION_USER=application \
+#    APPLICATION_GROUP=application \
+#    APPLICATION_PATH=/app \
+#    APPLICATION_UID=1000 \
+#    APPLICATION_GID=1000
+#
+## Add group
+#RUN groupadd -g "$APPLICATION_GID" "$APPLICATION_GROUP"
+#
+## Add user
+#RUN useradd -u "$APPLICATION_UID" --home "/home/application" --create-home --shell /bin/bash --no-user-group "$APPLICATION_USER"
+#
+## Assign user to group
+#RUN usermod -g "$APPLICATION_GROUP" "$APPLICATION_USER"
+#
+## Set Volumes
+#VOLUME ["/var/www", "/usr/local/etc", "/tmp/debug"]
+#
+## Configure volume/workdir
+#WORKDIR /var/www/
