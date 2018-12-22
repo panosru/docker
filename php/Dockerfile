@@ -6,6 +6,7 @@ FROM php:7.2.13-fpm
 
 ARG DEBIAN_FRONTEND=noninteractive
 
+# Install required libraries and apps
 RUN apt-get update && apt-get upgrade -y --no-install-recommends apt-utils \
     supervisor \
     logrotate \
@@ -28,8 +29,10 @@ RUN apt-get update && apt-get upgrade -y --no-install-recommends apt-utils \
     wget \
     git \
     unzip \
-    zip \
-    && docker-php-ext-install -j$(nproc) \
+    zip
+
+# Install Php extensions
+RUN docker-php-ext-install -j$(nproc) \
     bz2 \
     bcmath \
     calendar \
@@ -46,11 +49,6 @@ RUN apt-get update && apt-get upgrade -y --no-install-recommends apt-utils \
     pdo_mysql \
     pdo_pgsql \
     zip \
-    # configure: WARNING: Libzip >= 1.2.0 needed for encryption support
-    # https://github.com/docker-library/php/issues/766
-#    && docker-php-ext-configure zip \
-#        --with-libzip \
-#    && docker-php-ext-install zip \
     && docker-php-ext-configure ldap \
         --with-libdir=lib/x86_64-linux-gnu/ \
     && docker-php-ext-install ldap \
@@ -64,9 +62,11 @@ RUN apt-get update && apt-get upgrade -y --no-install-recommends apt-utils \
     && docker-php-ext-configure imap \
         --with-kerberos \
         --with-imap-ssl \
-    && docker-php-ext-install imap \
-    && yes '' | pecl install imagick && docker-php-ext-enable imagick \
-    && pecl install memcached-3.0.4 && docker-php-ext-enable memcached \
+    && docker-php-ext-install imap
+
+# Install PECL php extensions
+RUN yes '' | pecl install imagick && docker-php-ext-enable imagick \
+    && pecl install memcached && docker-php-ext-enable memcached \
     && pecl install mongodb && docker-php-ext-enable mongodb \
     && pecl install redis && docker-php-ext-enable redis \
     && pecl install xdebug-2.7.0beta1 && docker-php-ext-enable xdebug \
