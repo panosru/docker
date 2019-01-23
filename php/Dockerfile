@@ -70,7 +70,6 @@ RUN yes '' | pecl install imagick && docker-php-ext-enable imagick \
     && pecl install mongodb && docker-php-ext-enable mongodb \
     && pecl install redis && docker-php-ext-enable redis \
     && pecl install ast && docker-php-ext-enable ast \
-    && pecl install xdebug-2.7.0beta1 && docker-php-ext-enable xdebug \
     && pecl install igbinary && docker-php-ext-enable igbinary \
     && pecl install psr && docker-php-ext-enable psr \
     && pecl install mcrypt-1.0.1 && docker-php-ext-enable mcrypt \
@@ -102,14 +101,6 @@ RUN git clone https://github.com/swoole/swoole-src.git && \
     cd ../ && \
     rm -r swoole-src && \
     docker-php-ext-enable swoole
-
-
-# Install Blackfire
-RUN version=$(php -r "echo PHP_MAJOR_VERSION.PHP_MINOR_VERSION;") \
-    && curl -A "Docker" -o /tmp/blackfire-probe.tar.gz -D - -L -s https://blackfire.io/api/v1/releases/probe/php/linux/amd64/$version \
-    && tar zxpf /tmp/blackfire-probe.tar.gz -C /tmp \
-    && mv /tmp/blackfire-*.so $(php -r "echo ini_get('extension_dir');")/blackfire.so \
-    && printf "extension=blackfire.so\nblackfire.agent_socket=tcp://blackfire:8707\n" > $PHP_INI_DIR/conf.d/blackfire.ini
 
 # Install TA-Lib
 RUN wget http://prdownloads.sourceforge.net/ta-lib/ta-lib-0.4.0-src.tar.gz && \
