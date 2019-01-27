@@ -27,6 +27,7 @@ RUN apt-get update && apt-get upgrade -y --no-install-recommends apt-utils \
     libldap2-dev \
     libzip-dev \
     libpspell-dev \
+    libnghttp2-dev \
     wget \
     git \
     unzip \
