@@ -26,6 +26,8 @@ RUN apt-get update && apt-get upgrade -y --no-install-recommends apt-utils \
     libsasl2-dev \
     libldap2-dev \
     libzip-dev \
+    libpspell-dev \
+    libnghttp2-dev \
     wget \
     git \
     unzip \
@@ -44,6 +46,7 @@ RUN docker-php-ext-install -j$(nproc) \
     mysqli \
     sockets \
     opcache \
+    pspell \
     wddx \
     pgsql \
     pdo_mysql \
@@ -66,11 +69,12 @@ RUN docker-php-ext-install -j$(nproc) \
 
 # Install PECL php extensions
 RUN yes '' | pecl install imagick && docker-php-ext-enable imagick \
+    && pecl install msgpack && docker-php-ext-enable msgpack \
     && pecl install memcached && docker-php-ext-enable memcached \
     && pecl install mongodb && docker-php-ext-enable mongodb \
-    && pecl install redis && docker-php-ext-enable redis \
     && pecl install ast && docker-php-ext-enable ast \
     && pecl install igbinary && docker-php-ext-enable igbinary \
+    && yes 'yes' | pecl install redis && docker-php-ext-enable redis \
     && pecl install psr && docker-php-ext-enable psr \
     && pecl install mcrypt-1.0.2 && docker-php-ext-enable mcrypt \
     && pecl install amqp && docker-php-ext-enable amqp \
