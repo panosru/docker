@@ -73,7 +73,7 @@ RUN yes '' | pecl install imagick && docker-php-ext-enable imagick \
     && pecl install xdebug-2.7.0beta1 && docker-php-ext-enable xdebug \
     && pecl install igbinary && docker-php-ext-enable igbinary \
     && pecl install psr && docker-php-ext-enable psr \
-    && pecl install mcrypt-1.0.1 && docker-php-ext-enable mcrypt \
+    && pecl install mcrypt-1.0.2 && docker-php-ext-enable mcrypt \
     && pecl install amqp && docker-php-ext-enable amqp \
     && pecl install yaml && docker-php-ext-enable yaml
 
@@ -97,7 +97,7 @@ RUN curl -sSL "https://codeload.github.com/phalcon/cphalcon/tar.gz/v${PHALCON_VE
 RUN git clone https://github.com/swoole/swoole-src.git && \
     cd swoole-src && \
     phpize && \
-    ./configure && \
+    ./configure --enable-openssl --enable-sockets --enable-http2 --enable-mysqlnd --enable-async-redis && \
     make && make install && \
     cd ../ && \
     rm -r swoole-src && \
