@@ -26,6 +26,7 @@ RUN apt-get update && apt-get upgrade -y --no-install-recommends apt-utils \
     libsasl2-dev \
     libldap2-dev \
     libzip-dev \
+    libpspell-dev \
     wget \
     git \
     unzip \
@@ -44,6 +45,7 @@ RUN docker-php-ext-install -j$(nproc) \
     mysqli \
     sockets \
     opcache \
+    pspell \
     wddx \
     pgsql \
     pdo_mysql \
