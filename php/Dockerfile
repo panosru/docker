@@ -2,7 +2,7 @@
 # PHP application Docker container
 #++++++++++++++++++++++++++++++++++++++
 
-FROM php:7.2.14-fpm
+FROM php:7.3.3-fpm
 
 ARG DEBIAN_FRONTEND=noninteractive
 
@@ -73,7 +73,7 @@ RUN yes '' | pecl install imagick && docker-php-ext-enable imagick \
     && pecl install memcached && docker-php-ext-enable memcached \
     && pecl install mongodb && docker-php-ext-enable mongodb \
     && pecl install ast && docker-php-ext-enable ast \
-    && pecl install xdebug-2.7.0beta1 && docker-php-ext-enable xdebug \
+    && pecl install xdebug-2.7.0 && docker-php-ext-enable xdebug \
     && pecl install igbinary && docker-php-ext-enable igbinary \
     && yes 'yes' | pecl install redis && docker-php-ext-enable redis \
     && pecl install psr && docker-php-ext-enable psr \
