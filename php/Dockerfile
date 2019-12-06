@@ -2,7 +2,7 @@
 # PHP application Docker container
 #++++++++++++++++++++++++++++++++++++++
 
-FROM php:7.3.12-fpm
+FROM php:7.4.0-fpm
 
 ARG DEBIAN_FRONTEND=noninteractive
 
@@ -33,17 +33,21 @@ RUN apt-get update && apt-get install -y --no-install-recommends apt-utils \
     libzstd-dev \
     libtidy-dev \
     libxslt1-dev \
+    libwebp-dev \
+    libxpm-dev \
     memcached \
     wget \
     git \
     unzip \
-    zip
+    zip \
+    && rm -r /var/lib/apt/lists/*
 
 # Install Php extensions
 RUN docker-php-ext-install -j$(nproc) \
     bz2 \
     bcmath \
     calendar \
+    dba \
     exif \
     gettext \
     pcntl \
@@ -53,7 +57,7 @@ RUN docker-php-ext-install -j$(nproc) \
     sockets \
     opcache \
     pspell \
-    wddx \
+    # wddx \
     pgsql \
     pdo_mysql \
     pdo_pgsql \
@@ -61,19 +65,21 @@ RUN docker-php-ext-install -j$(nproc) \
     sysvmsg \
     sysvsem \
     sysvshm \
+    tidy \
     xmlrpc \
     xsl \
     && docker-php-ext-configure ldap \
         --with-libdir=lib/x86_64-linux-gnu/ \
     && docker-php-ext-install ldap \
     && docker-php-ext-configure gd \
-        --with-freetype-dir=/usr/include/ \
-        --with-jpeg-dir=/usr/include/ \
-        --with-png-dir=/usr/include/ \
+        --with-freetype \
+        --with-jpeg \
+        --with-webp \
+        --with-xpm \
     && docker-php-ext-install -j$(nproc) gd \
     && docker-php-ext-configure intl \
     && docker-php-ext-install -j$(nproc) intl \
-    && docker-php-ext-configure imap \
+    && set -eux; PHP_OPENSSL=yes docker-php-ext-configure imap \
         --with-kerberos \
         --with-imap-ssl \
     && docker-php-ext-install imap
@@ -145,5 +151,4 @@ ENV PATH $PATH:/root/composer/vendor/bin
 RUN pecl clear-cache \
     && apt-get autoremove -y --purge \
     && apt-get clean \
-    && rm -rf /var/lib/apt/lists/* \
     && rm -Rf /tmp/*
