@@ -2,7 +2,7 @@
 # PHP application Docker container
 #++++++++++++++++++++++++++++++++++++++
 
-FROM php:7.4.0-fpm
+FROM php:8.1.1-fpm
 
 ARG DEBIAN_FRONTEND=noninteractive
 
@@ -17,6 +17,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends apt-utils \
     libjpeg62-turbo-dev \
     libkrb5-dev \
     libpq-dev \
+    libcurl4-openssl-dev \
     libmagickwand-dev \
     libyaml-dev \
     libmcrypt-dev \
@@ -47,6 +48,7 @@ RUN docker-php-ext-install -j$(nproc) \
     bz2 \
     bcmath \
     calendar \
+    curl \
     dba \
     exif \
     gettext \
@@ -62,11 +64,11 @@ RUN docker-php-ext-install -j$(nproc) \
     pdo_mysql \
     pdo_pgsql \
     zip \
+    sockets \
     sysvmsg \
     sysvsem \
     sysvshm \
     tidy \
-    xmlrpc \
     xsl \
     && docker-php-ext-configure ldap \
         --with-libdir=lib/x86_64-linux-gnu/ \
@@ -85,23 +87,19 @@ RUN docker-php-ext-install -j$(nproc) \
     && docker-php-ext-install imap
 
 # Install PECL php extensions
-RUN yes '' | pecl install imagick && docker-php-ext-enable imagick \
-    && pecl install msgpack && docker-php-ext-enable msgpack \
-    && pecl install igbinary && docker-php-ext-enable igbinary \
-    && pecl install mongodb && docker-php-ext-enable mongodb \
-    && pecl install ast && docker-php-ext-enable ast \
-    && pecl install psr && docker-php-ext-enable psr \
-    && pecl install trader && docker-php-ext-enable trader \
-    && yes '' | pecl install mcrypt && docker-php-ext-enable mcrypt \
-    && yes '' | pecl install amqp && docker-php-ext-enable amqp \
-    && yes '' | pecl install yaml && docker-php-ext-enable yaml \
-    && yes 'yes' | pecl install redis && docker-php-ext-enable redis
-
-# Install APCu and APC backward compatibility
-RUN yes '' | pecl install apcu \
-    && pecl install apcu_bc \
-    && docker-php-ext-enable apcu --ini-name 10-docker-php-ext-apcu.ini \
-    && docker-php-ext-enable apc --ini-name 20-docker-php-ext-apc.ini
+RUN yes '' | pecl install imagick && docker-php-ext-enable imagick
+RUN pecl install msgpack && docker-php-ext-enable msgpack
+RUN pecl install igbinary && docker-php-ext-enable igbinary
+RUN pecl install mongodb && docker-php-ext-enable mongodb
+RUN pecl install ast && docker-php-ext-enable ast
+RUN pecl install psr && docker-php-ext-enable psr
+RUN pecl install trader && docker-php-ext-enable trader
+#RUN yes '' | pecl install mcrypt && docker-php-ext-enable mcrypt
+RUN yes '' | pecl install xmlrpc-1.0.0RC3 && docker-php-ext-enable xmlrpc
+RUN yes '' | pecl install amqp && docker-php-ext-enable amqp
+RUN yes '' | pecl install yaml && docker-php-ext-enable yaml
+RUN yes 'yes' | pecl install redis && docker-php-ext-enable redis
+RUN yes '' | pecl install apcu && docker-php-ext-enable apcu --ini-name 10-docker-php-ext-apcu.ini
 
 # Install memcached from source
 RUN git clone https://github.com/php-memcached-dev/php-memcached.git && \
@@ -113,37 +111,32 @@ RUN git clone https://github.com/php-memcached-dev/php-memcached.git && \
     rm -rf php-memcached && \
     docker-php-ext-enable memcached
 
-# Install Phalcon
-ENV PHALCON_VERSION=4.0.0-rc.3
+RUN pecl install memcache && docker-php-ext-enable memcache --ini-name 10-docker-php-ext-memcache.ini
 
-RUN curl -sSL "https://codeload.github.com/phalcon/cphalcon/tar.gz/v${PHALCON_VERSION}" | tar -xz \
-    && cd cphalcon-${PHALCON_VERSION}/build \
-    && ./install \
-    && wget -P $(php-config --configure-options | grep -o "with-config-file-scan-dir=\([^ ]*\)" | awk -F'=' '{print $2}') "https://raw.githubusercontent.com/phalcon/cphalcon/3.4.x/tests/_ci/phalcon.ini" \
-    && cd ../.. \
-    && rm -rf cphalcon-${PHALCON_VERSION}
+# Install Phalcon
+# ENV PHALCON_VERSION=4.0.0-rc.3
+#
+# RUN curl -sSL "https://codeload.github.com/phalcon/cphalcon/tar.gz/v${PHALCON_VERSION}" | tar -xz \
+#     && cd cphalcon-${PHALCON_VERSION}/build \
+#     && ./install \
+#     && wget -P $(php-config --configure-options | grep -o "with-config-file-scan-dir=\([^ ]*\)" | awk -F'=' '{print $2}') "https://raw.githubusercontent.com/phalcon/cphalcon/3.4.x/tests/_ci/phalcon.ini" \
+#     && cd ../.. \
+#     && rm -rf cphalcon-${PHALCON_VERSION}
 
 # Install Swoole
-RUN git clone https://github.com/swoole/swoole-src.git && \
+RUN git clone https://github.com/openswoole/swoole-src.git && \
     cd swoole-src && \
     phpize && \
-    ./configure --enable-openssl --enable-sockets --enable-http2 --enable-mysqlnd && \
+    ./configure --enable-openssl --enable-http2 --enable-swoole --enable-mysqlnd --enable-swoole-json --enable-swoole-curl && \
     make && make install && \
+    docker-php-ext-enable openswoole && \
     cd .. && \
-    rm -rf swoole-src && git clone https://github.com/swoole/ext-async.git && \
-    cd ext-async && \
-    phpize && \
-    ./configure --enable-swoole_async && \
-    make && make install && \
-    cd .. && \
-    rm -rf ext-async && \
-    docker-php-ext-enable swoole && docker-php-ext-enable swoole_async
+    rm -rf swoole-src
+
 
 # Install Composer
 RUN curl --silent --show-error https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer \
-    && ln -s $(composer config --global home) /root/composer \
-    # parallel install plugin
-    && composer global require hirak/prestissimo
+    && ln -s $(composer config --global home) /root/composer
 
 ENV PATH $PATH:/root/composer/vendor/bin
 
