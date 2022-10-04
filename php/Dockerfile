@@ -2,12 +2,12 @@
 # PHP application Docker container
 #++++++++++++++++++++++++++++++++++++++
 
-FROM php:8.1.1-fpm
+FROM php:latest
 
 ARG DEBIAN_FRONTEND=noninteractive
 
 # Install required libraries and apps
-RUN apt-get update && apt-get install -y --no-install-recommends apt-utils \
+RUN apt-get update && apt-get upgrade -y && apt-get install -y --no-install-recommends apt-utils \
     supervisor \
     logrotate \
     librabbitmq-dev \
@@ -94,7 +94,9 @@ RUN pecl install mongodb && docker-php-ext-enable mongodb
 RUN pecl install ast && docker-php-ext-enable ast
 RUN pecl install psr && docker-php-ext-enable psr
 RUN pecl install trader && docker-php-ext-enable trader
-#RUN yes '' | pecl install mcrypt && docker-php-ext-enable mcrypt
+RUN pecl install phalcon && docker-php-ext-enable phalcon
+RUN pecl install zephir_parser && docker-php-ext-enable zephir_parser
+RUN yes '' | pecl install mcrypt && docker-php-ext-enable mcrypt
 RUN yes '' | pecl install xmlrpc-1.0.0RC3 && docker-php-ext-enable xmlrpc
 RUN yes '' | pecl install amqp && docker-php-ext-enable amqp
 RUN yes '' | pecl install yaml && docker-php-ext-enable yaml
@@ -113,16 +115,6 @@ RUN git clone https://github.com/php-memcached-dev/php-memcached.git && \
 
 RUN pecl install memcache && docker-php-ext-enable memcache --ini-name 10-docker-php-ext-memcache.ini
 
-# Install Phalcon
-# ENV PHALCON_VERSION=4.0.0-rc.3
-#
-# RUN curl -sSL "https://codeload.github.com/phalcon/cphalcon/tar.gz/v${PHALCON_VERSION}" | tar -xz \
-#     && cd cphalcon-${PHALCON_VERSION}/build \
-#     && ./install \
-#     && wget -P $(php-config --configure-options | grep -o "with-config-file-scan-dir=\([^ ]*\)" | awk -F'=' '{print $2}') "https://raw.githubusercontent.com/phalcon/cphalcon/3.4.x/tests/_ci/phalcon.ini" \
-#     && cd ../.. \
-#     && rm -rf cphalcon-${PHALCON_VERSION}
-
 # Install Swoole
 RUN git clone https://github.com/openswoole/swoole-src.git && \
     cd swoole-src && \
@@ -133,6 +125,9 @@ RUN git clone https://github.com/openswoole/swoole-src.git && \
     cd .. && \
     rm -rf swoole-src
 
+# Add WDDX support
+COPY ./wddx ./wddx
+RUN cd wddx && phpize && ./configure && make && make install && cd .. && rm -rf wddx
 
 # Install Composer
 RUN curl --silent --show-error https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer \
