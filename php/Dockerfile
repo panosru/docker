@@ -24,6 +24,7 @@ RUN apt-get update && apt-get upgrade -y && apt-get install -y --no-install-reco
     libmcrypt-dev \
     libpng-dev \
     libmemcached-dev \
+    libgmp-dev \
     libz-dev \
     libsasl2-dev \
     libldap2-dev \
@@ -60,7 +61,7 @@ RUN docker-php-ext-install -j$(nproc) \
     sockets \
     opcache \
     pspell \
-    # wddx \
+    gmp \
     pgsql \
     pdo_mysql \
     pdo_pgsql \
