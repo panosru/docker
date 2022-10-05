@@ -2,12 +2,13 @@
 # PHP application Docker container
 #++++++++++++++++++++++++++++++++++++++
 
-FROM php:latest
+FROM php:8.1.11-fpm
 
 ARG DEBIAN_FRONTEND=noninteractive
 
 # Install required libraries and apps
 RUN apt-get update && apt-get upgrade -y && apt-get install -y --no-install-recommends apt-utils \
+    pcregrep \
     supervisor \
     logrotate \
     librabbitmq-dev \
@@ -125,9 +126,21 @@ RUN git clone https://github.com/openswoole/swoole-src.git && \
     cd .. && \
     rm -rf swoole-src
 
-# Add WDDX support
+# Install Wddx
 COPY ./wddx ./wddx
 RUN cd wddx && phpize && ./configure && make && make install && cd .. && rm -rf wddx
+
+# Install ioncube loader
+RUN php_version=$(php -r "echo PHP_MAJOR_VERSION.'.'.PHP_MINOR_VERSION;") \
+    && php_extension_dir=$(php -r "echo ini_get('extension_dir');") \
+    && php_additional_ini=$(php -i | grep 'additional .ini files' | pcregrep -o1 '=> (.+)') \
+    && curl -fSL 'http://downloads3.ioncube.com/loader_downloads/ioncube_loaders_lin_x86-64.tar.gz' -o ioncube.tar.gz \
+    && mkdir -p ioncube \
+    && tar -xf ioncube.tar.gz -C ioncube --strip-components=1 \
+    && rm ioncube.tar.gz \
+    && mv ioncube/ioncube_loader_lin_$php_version.so $php_extension_dir/ioncube_loader_lin_$php_version.so \
+    && rm -r ioncube \
+    && echo "zend_extension=$php_extension_dir/ioncube_loader_lin_$php_version.so" > $php_additional_ini/00-ioncube.ini
 
 # Install Composer
 RUN curl --silent --show-error https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer \
