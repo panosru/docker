@@ -98,6 +98,7 @@ RUN pecl install psr && docker-php-ext-enable psr
 RUN pecl install trader && docker-php-ext-enable trader
 RUN pecl install phalcon && docker-php-ext-enable phalcon
 RUN pecl install zephir_parser && docker-php-ext-enable zephir_parser
+RUN pecl install mailparse && docker-php-ext-enable mailparse
 RUN yes '' | pecl install mcrypt && docker-php-ext-enable mcrypt
 RUN yes '' | pecl install xmlrpc-1.0.0RC3 && docker-php-ext-enable xmlrpc
 RUN yes '' | pecl install amqp && docker-php-ext-enable amqp
