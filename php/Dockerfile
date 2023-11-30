@@ -2,7 +2,7 @@
 # PHP application Docker container
 #++++++++++++++++++++++++++++++++++++++
 
-FROM php:8.2.11-fpm
+FROM php:8.3.0-fpm
 
 ARG DEBIAN_FRONTEND=noninteractive
 
