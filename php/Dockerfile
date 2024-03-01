@@ -2,9 +2,13 @@
 # PHP application Docker container
 #++++++++++++++++++++++++++++++++++++++
 
-FROM php:8.3.0-fpm
+FROM php:8.2.16-fpm
 
 ARG DEBIAN_FRONTEND=noninteractive
+
+# Install the Docker PHP Extension Installer
+ADD https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions /usr/local/bin/
+RUN chmod +x /usr/local/bin/install-php-extensions
 
 # Install required libraries and apps
 RUN apt-get update && apt-get upgrade -y && apt-get install -y --no-install-recommends apt-utils \
@@ -88,8 +92,12 @@ RUN docker-php-ext-install -j$(nproc) \
         --with-imap-ssl \
     && docker-php-ext-install imap
 
+# Use the Docker PHP Extension Installer to install PHP extensions
+RUN install-php-extensions \
+    imagick
+
 # Install PECL php extensions
-RUN yes '' | pecl install imagick && docker-php-ext-enable imagick
+#RUN yes '' | pecl install imagick-3.7.0 && docker-php-ext-enable imagick
 RUN pecl install msgpack && docker-php-ext-enable msgpack
 RUN pecl install igbinary && docker-php-ext-enable igbinary
 RUN pecl install mongodb && docker-php-ext-enable mongodb
