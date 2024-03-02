@@ -2,7 +2,7 @@
 # PHP application Docker container
 #++++++++++++++++++++++++++++++++++++++
 
-FROM panosru/php:latest
+FROM panosru/php:8.2.16-fpm
 
 ENV PATH $PATH:/root/composer/vendor/bin
 

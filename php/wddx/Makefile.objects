@@ -1,0 +1,9 @@
+-include wddx.dep
+wddx.lo: /Volumes/Projects/_dev/wddx/wddx.c
+	$(LIBTOOL) --mode=compile $(CC) -I. -I/Volumes/Projects/_dev/wddx $(COMMON_FLAGS) $(CFLAGS_CLEAN) $(EXTRA_CFLAGS)   -c /Volumes/Projects/_dev/wddx/wddx.c -o wddx.lo  -MMD -MF wddx.dep -MT wddx.lo
+$(phplibdir)/wddx.la: ./wddx.la
+	$(LIBTOOL) --mode=install cp ./wddx.la $(phplibdir)
+
+./wddx.la: $(shared_objects_wddx) $(WDDX_SHARED_DEPENDENCIES)
+	$(LIBTOOL) --mode=link $(CC) -shared $(COMMON_FLAGS) $(CFLAGS_CLEAN) $(EXTRA_CFLAGS) $(LDFLAGS)  -o $@ -export-dynamic -avoid-version -prefer-pic -module -rpath $(phplibdir) $(EXTRA_LDFLAGS) $(shared_objects_wddx) $(WDDX_SHARED_LIBADD)
+
