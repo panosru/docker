@@ -1,0 +1,15 @@
+/var/log/nginx/*.log {
+    size ${LOG_SIZE}M
+    rotate ${LOG_ROTATE}
+    compress
+    missingok
+    notifempty
+    create 0640 nginx nginx
+    sharedscripts
+    ${ADDITIONAL_DIRECTIVES}
+    postrotate
+        if [ -f /var/run/nginx.pid ]; then
+            kill -USR1 `cat /var/run/nginx.pid`
+        fi
+    endscript
+}
