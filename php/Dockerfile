@@ -38,7 +38,14 @@ RUN docker-php-ext-install -j$(nproc) \
     && docker-php-ext-install -j$(nproc) intl \
     && PHP_OPENSSL=yes docker-php-ext-configure imap --with-kerberos --with-imap-ssl \
     && docker-php-ext-install imap \
-    && install-php-extensions @composer igbinary msgpack mongodb ast psr trader phalcon zephir_parser mailparse mcrypt xmlrpc amqp yaml redis apcu
+    && install-php-extensions @composer igbinary msgpack mongodb ast psr trader zephir_parser mailparse mcrypt xmlrpc amqp yaml redis apcu
+
+# Conditionally install Phalcon for PHP 7.2 and above, including all PHP 8 versions
+RUN if [ $(php -r 'echo PHP_MAJOR_VERSION;') -eq 7 ] && [ $(php -r 'echo PHP_MINOR_VERSION;') -ge 4 ]; then \
+        install-php-extensions phalcon-5.4.0; \
+    elif [ $(php -r 'echo PHP_MAJOR_VERSION;') -ge 8 ]; then \
+        install-php-extensions phalcon; \
+    fi
 
 # Install Imagick from source since the PECL way is not yet compatible with PHP v8.3
 RUN mkdir -p /usr/src/php/ext/imagick \
@@ -50,8 +57,15 @@ RUN git clone --depth 1 https://github.com/php-memcached-dev/php-memcached.git /
     && cd /usr/src/php/ext/memcached && phpize \
     && ./configure --enable-memcached --enable-memcached-session --enable-memcached-igbinary --enable-memcached-json --enable-memcached-msgpack --enable-memcached-sasl \
     && make && make install \
-    && echo "extension=memcached.so" > $PHP_INI_DIR/conf.d/memcached.ini \
-    && pecl install memcache && docker-php-ext-enable --ini-name 40-memcache.ini memcache
+    && echo "extension=memcached.so" > $PHP_INI_DIR/conf.d/memcached.ini
+
+# Install memcache depending on php version
+RUN if [ $(php -r 'echo PHP_MAJOR_VERSION;') -eq 8 ]; then \
+        pecl install memcache && docker-php-ext-enable --ini-name 40-memcache.ini memcache; \
+    elif [ $(php -r 'echo PHP_MAJOR_VERSION;') -eq 7 ]; then \
+        pecl install memcache-4.0.5.2 && docker-php-ext-enable --ini-name 40-memcache.ini memcache; \
+    fi
+
 
 # Build openswoole from source
 RUN git clone https://github.com/openswoole/swoole-src.git /tmp/openswoole && cd /tmp/openswoole \
